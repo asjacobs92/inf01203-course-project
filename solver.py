@@ -10,7 +10,6 @@ from unidecode import *
 def list_searches_by_city(searches, input, size):
     city = input[0]
     city_searches = [search for search in searches if search['city'] == city]
-
     list_searches(city_searches, input[1:], size)
 
 
@@ -20,10 +19,13 @@ def list_searches(searches, input, size):
 
     counter = Counter(all_searches)
     with open("res/{}/output.txt".format(size), "a") as file:
-        search_list = counter.most_common() if num_searches == 0 else counter.most_common(num_searches)
-        for key, count in sorted(search_list, key=lambda item: (-item[1], item[0])):
+        search_list = counter.most_common()
+        for i, (key, count) in enumerate(sorted(search_list, key=lambda item: (-item[1], item[0]))):
+            if num_searches != 0 and i == num_searches:
+                break
             key_string = ';'.join(list(key))
             file.write('{} {}\n'.format(count, key_string))
+        file.write('####### FIM DA OPERAÇÂO #########\n')
 
 
 def list_terms_by_city(searches, input, size):
@@ -40,9 +42,12 @@ def list_terms(searches, input, size):
 
     counter = Counter(all_terms)
     with open("res/{}/output.txt".format(size), "a") as file:
-        list = counter.most_common() if num_terms == 0 else counter.most_common(num_terms)
-        for key, count in sorted(list, key=lambda item: (-item[1], item[0])):
+        list = counter.most_common()
+        for i, (key, count) in enumerate(sorted(list, key=lambda item: (-item[1], item[0]))):
+            if num_terms != 0 and i == num_terms:
+                break
             file.write('{} {}\n'.format(count, key))
+        file.write('####### FIM DA OPERAÇÂO #########\n')
 
 
 def mean_length_by_city(searches, input, size):
@@ -58,6 +63,7 @@ def mean_length(searches, input, size):
     with open("res/{}/output.txt".format(size), "a") as file:
         mean = 0 if len(lengths) == 0 else float(sum(lengths)) / len(lengths)
         file.write('Media de termos {}\n'.format(int(mean)))
+        file.write('####### FIM DA OPERAÇÂO #########\n')
 
 
 operation_callbacks = {
@@ -112,6 +118,14 @@ def solve_large():
         operation_callbacks[op['code']](searches, op['input'], 'large')
 
 
+def solve_evaluation():
+    searches = read_searches('evaluation')
+    operations = read_operations('evaluation')
+
+    for op in operations:
+        operation_callbacks[op['code']](searches, op['input'], 'evaluation')
+
+
 def cleanup():
     open('res/small/output.txt', 'w').close()
     open('res/large/output.txt', 'w').close()
@@ -123,3 +137,4 @@ if __name__ == "__main__":
 
     solve_small()
     solve_large()
+    solve_evaluation()
